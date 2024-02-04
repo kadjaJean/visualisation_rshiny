@@ -1,0 +1,1110 @@
+---
+title: "Traitement_data"
+author: "Kadja_Blin"
+date: "2024-01-20"
+output: html_document
+---
+
+```{r }
+library(tidyverse)
+
+```
+
+
+
+```{r}
+library(readxl)
+data=read_xlsx("Reponses- QUESTIONNAIRE_CAD_V04122023.xlsx",col_names = TRUE)
+```
+
+
+```{r}
+head(data)
+```
+
+
+```{r}
+dim(data)
+```
+
+
+```{r}
+str(data)
+```
+
+
+
+```{r}
+str(data)
+```
+
+
+```{r}
+head(data)
+```
+
+
+```{r}
+dim(data)[1]
+```
+
+
+
+
+```{r}
+str(data)
+```
+
+p0ur la c0l0ne Pouvez-vous citer au moins une œuvre de Cheikh Anta Diop? 0n va remPlir n0n P0ur t0us les chamPs na.
+
+
+
+
+### EC0DAGE DES VAR CATEG0RIELLES
+```{r}
+unique(data[,4])
+
+# les modalites ou oeuvres  sont:civilisation ou barbarie,nègre et nations,cultures africaines,l'afrique noir pre-coloniale,radicarbone,unité culturelle de l'afrique noire,ramses 2 le nègre,l’aventure ambigue,histoire générale de l'afrique,anthropologie,nouvelles recherches sur l'égyptien ancien et les langues négro-africaines modernes,climbié ?,civilisation négre,decouverte du carbone 14,egypte antique était noir,éléments constitutifs d'un état fédéral africain,alerte sous les tropique,
+
+
+# duppliquer la ligne quand le user a lu many oeuvres
+
+# utilis0ns une m0delisati0n univariée
+# rec0d0ns la variable age remplacer les na par la m0yenne
+# les ages :VII_4: Quel  âge  avez-vous ? et
+
+# rec0d0ns les n0ms de c0l
+# supprim0ns les c0l0nes suivantes:CONNAISSANCE GENERALE,TRAVAUX SPECIFIQUES,INFLUENCE ET RECONNAISSANCE,
+# RECEPTION CRITIQUE,SOURCES D'INFORMATION,
+#delete c0l0ne avec t0ut na
+k=0
+u=rep(0,13)
+for (i in 1:dim(data)[2]){
+  cat( colnames(data)[i],":",sum(is.na(data[,i])) ,"\n")
+  if(sum(is.na(data[,i])) == dim(data)[1]){
+    k=k+1
+    u[k]=i
+  }
+}
+
+
+```
+
+
+```{r}
+data=data[,-u]
+```
+
+
+```{r}
+for (i in 1:dim(data)[2]){
+  cat( colnames(data)[i],":",sum(is.na(data[,i])) ,"\n")}
+head(data)
+```
+### supprim0ns les 10 dernieres c0ls car elles n'0nt aucune influence
+```{r}
+l=dim(data)[2]
+data=data[,-((l-9):l)]
+```
+
+
+```{r}
+data1=data
+```
+
+```{r}
+data=data_1
+```
+
+
+```{r}
+head(data)
+```
+
+### ANALYSE UNIVARIEE
+
+### REN0M0NS LES C0LS
+```{r}
+colnames(data)=c("connaiss","Pays_naiss_aut","Period_naiss","Period_deces","nature_aut","Preciser_nature","moyens_connaiss","Preciser_moyens_connaiss","oeuvres_aut","Period_hist","oeuvres_lu","description_app","influence","autres_auteur","perception_gen","enseignants_aut","celebres_soutien_aut","critiques_analyses","principales_critiques","pertinence_idees","lieu_obtention_info","Preciser_lieu","education_user","Pays_naiss_user","Pays_resi_user","age_user","age_entente_aut","Poursuivre_contribution","commentaire_sup")
+
+```
+
+```{r}
+head(data)
+#t1=saveRDS(data,"dt1.rds")
+```
+### travaillons sur les ages,age_user,age_entente_aut
+ 
+recodons les suivant cette logique:
+
+enfant:2 a 10/12 ans
+
+adolescent: 13 ans à 18 ans
+
+jeunes adulte: 18 ans a 35 ans
+
+adultes: 35 ans a 70 ans
+
+vieillards: 70 et plus
+```{r}
+# remplac0ns les na de age_user,age_entente_aut et  by mean
+library(tidyverse)
+data <- data %>%
+  mutate( age_user = ifelse(is.na( age_user), mean( age_user, na.rm = TRUE),  age_user))
+```
+
+
+```{r}
+data <- data %>%
+  mutate( age_entente_aut = ifelse(is.na( age_entente_aut), mean( age_entente_aut, na.rm = TRUE),  age_entente_aut))
+```
+
+```{r}
+data[,26]=round(data[,26])
+```
+
+```{r}
+data[,27]=round(data[,27])
+```
+
+```{r}
+data
+```
+
+
+
+
+
+
+
+```{r}
+# du fait d'un age negatif
+data[,26]=abs(data[,26])
+
+```
+
+```{r}
+data <- data %>%
+  mutate(age_user = case_when(
+    age_user >= 2 & age_user <= 10 ~ "Enfant",
+    age_user >= 11 & age_user <= 18 ~ "Adolescent",
+    age_user >= 19 & age_user <= 35 ~ "Jeune adulte",
+    age_user >= 36 & age_user <= 70 ~ "Adulte",
+    age_user >= 71 ~ "Vieillard"
+
+  ))
+```
+
+
+```{r}
+
+data <- data %>%
+  mutate(age_entente_aut = case_when(
+    age_entente_aut >= 2 & age_entente_aut <= 10 ~ "Enfant",
+    age_entente_aut >= 11 & age_entente_aut <= 18 ~ "Adolescent",
+    age_entente_aut >= 19 & age_entente_aut <= 35 ~ "Jeune adulte",
+    age_entente_aut >= 36 & age_entente_aut <= 70 ~ "Adulte",
+    age_entente_aut >= 71 ~ "Vieillard"
+
+  ))
+```
+
+```{r}
+data
+```
+
+## col oeuvres
+```{r}
+
+
+
+data <- data %>% mutate( oeuvres_aut = ifelse(is.na( oeuvres_aut), "non",  oeuvres_aut))
+```
+```{r}
+unique(data[,"oeuvres_aut"])
+```
+
+
+
+```{r}
+li=1:(dim(data)[1])
+for (i in li){
+  data[i,"oeuvres_aut"]=tolower(data[i,"oeuvres_aut"])
+  
+}
+```
+
+
+
+
+```{r}
+unique(data["oeuvres_aut"])
+```
+
+
+
+
+
+```{r}
+# mauvaise reP0nse:kaicedra,je ne me rappelle plus du titre,afrique mon afrique,néant,radicarbone,ramses 2 le nègre,	...,l’aventure ambigue,histoire générale de l'afrique,anthropologie,ramses 2 le negre,ramses ii le negre,climbié ?,	oui,decouverte du carbone 14,egypte antique était noir,j'ai oublié le titre du livre mais il a ecrit un livre sur l'egypte antique et la civilisation africaine,il a lors de sa thèse écris pour montrer que l'égypte était habité par les noirs,l'egypte,anthropologie negro africaine,	nothing , je sais juste qu’une université porte son nom,	en 1966, il crée le premier laboratoire africain de datation fossiles archéologique au radiocarbone,
+
+# aucune,neant: n0n
+
+m=c("kaicedra","je ne me rappelle plus du titre","afrique mon afrique","néant,radicarbone","ramses 2 le nègre","...","l’aventure ambigue","histoire générale de l'afrique","anthropologie","ramses 2 le negre","ramses ii le negre","climbié ?",	"oui","decouverte du carbone 14","egypte antique était noir","j'ai oublié le titre du livre mais il a ecrit un livre sur l'egypte antique et la civilisation africaine","il a lors de sa thèse écris pour montrer que l'égypte était habité par les noirs","l'egypte","anthropologie negro africaine","en 1966, il crée le premier laboratoire africain de datation fossiles archéologique au radiocarbone","nothing , je sais juste qu’une université porte son nom","radicarbone","histoire générale de l'afrique")
+for(i in li){
+  for(j in m){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="mauvaise reponse"
+    
+      }
+    }
+    
+  }
+
+```
+
+
+```{r}
+for(i in li){
+  
+      if( data[i,"oeuvres_aut"] == "néant" | data[i,"oeuvres_aut"] == "aucune" ){
+        
+        data[i,"oeuvres_aut"]="non"
+    
+      }
+    
+    
+  }
+
+```
+
+
+
+
+```{r}
+for(i in li){
+  
+      if( data[i,"oeuvres_aut"] == "thé culture of black africa" ){
+        
+        data[i,"oeuvres_aut"]="unité culturelle de l'afrique noire"
+    
+      }
+    
+    
+  }
+```
+
+
+```{r}
+for(i in li){
+  
+      if( data[i,"oeuvres_aut"] == "black africa" ){
+        
+        data[i,"oeuvres_aut"]="unité culturelle de l'afrique noire"
+    
+      }
+  else if(data[i,"oeuvres_aut"] == "civilisation ou barbarie?"){
+    data[i,"oeuvres_aut"]="civilisation ou barbarie"
+    
+  }
+    else if(data[i,"oeuvres_aut"] == "afrique noire pré coloniale"  |   data[i,"oeuvres_aut"]=="l'afrique noir pre-coloniale"){
+    data[i,"oeuvres_aut"]="afrique noire precoloniale"
+  }
+    
+    
+}
+```
+
+
+```{r}
+oeuvres=c("barbabrie ou civilisation","nations negres et cultures","unite culturelle de l'afrique noire","afrique noire  precoloniale","nouvelles recherches sur l'égyptien ancien et les langues négro-africaines modernes","les fondements culturels et techniques d'un federal afrique noire","non")
+```
+
+
+
+
+
+```{r}
+for(i in li){
+  
+      if( data[i,"oeuvres_aut"] == "histoire générale de l'afrique" ){
+        
+        data[i,"oeuvres_aut"]="mauvaise reponse"
+    
+      }}
+```
+
+
+```{r}
+
+v=c("l'afrique noire précoloniale","l'afrique noire précoloniale","afrique précoloniale","afrique noire precoloniale","afrique noire precoloniale")
+v1=c("histoire générale de l'afrique")
+v2=c("nouvelles recherches sur l'égyptien ancien et les langues négro-africaines modernes")
+v3=c("civilisation ou barbarie","barbarie ou civilisation","civilisation négre")
+v4=c("nations nègres et culture ; civilisations ou barbarie ;","nation nègre et culture; alerte sous les tropique; civilisation ou barbarie...")
+v5=c("nègre et nations","nations nègres et cultures","nations nègres et culture","nations nègres et culture : de l'antiquité nègre égyptienne aux problèmes culturels de l'afrique noire d'aujourd'hui, 1954.",
+"nations nègres","nations negres et cultures","nations negres","nation negre","nations negres..","nations négres","nations, nègres et culture","nations nègres et cultures africaines","nation nègre et culture et autres ouvrages","nations, nègre et culture","nations negres et culture la","nation négre et culture","nation nègre et culture","nations negres et culture","nation negre et culture","nations nègres et culture","nation nègres et culture","nation nègres et culture","nation nègres et culture","nation negre et cultures","nation nègre culture","nation negres et culture")
+v6=c("l'unité culturelle de l'afrique noire")
+v7=c("nation negre et culture, éléments constitutifs d'un état fédéral africain")
+v8=c("nations negres et culture, civilisation ou barbarie, alerte sous les tropiques,l’afrique noire pré coloniale")
+v9=c("histoire générale de  l'afrique")
+
+```
+
+
+```{r}
+for(i in li){
+  for(j in v5){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="nations negres et cultures"
+    
+      }
+    }
+    
+  }
+```
+
+```{r}
+for(i in li){
+  for(j in v){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="afrique noire  precoloniale"
+    
+      }
+    }
+    
+}
+```
+
+
+```{r}
+for(i in li){
+  for(j in v3){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="barbabrie ou civilisation"
+    
+      }
+    }
+    
+}
+```
+
+
+```{r}
+
+for(i in li){
+  for(j in v4){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="nations nègres et culture , civilisations ou barbarie"
+    
+      }
+    }
+    
+}
+```
+
+
+```{r}
+for(i in li){
+  for(j in v8){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="nations negres et culture, civilisation ou barbarie,l’afrique noire pré coloniale"
+    
+      }
+    }
+    
+}
+```
+
+
+```{r}
+for(i in li){
+  for(j in v5){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="nations nègres et culture"
+    
+      }
+    }
+    
+}
+```
+
+
+```{r}
+for(i in li){
+  for(j in v7){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="nation negre et culture,les fndements culturels et techniques d'un  federal Afrique noir"
+    
+      }
+    }
+    
+}
+```
+
+
+```{r}
+for(i in li){
+  for(j in v9){
+      if( data[i,"oeuvres_aut"] == j ){
+        
+        data[i,"oeuvres_aut"]="mauvaise reponse"
+    
+      }
+    }
+    
+}
+```
+
+```{r}
+unique(data$oeuvres_aut)
+```
+
+
+```{r}
+saveRDS(data,"data1.rdds")
+```
+
+
+```{r}
+head(data)
+```
+
+### var connaiss: n0t na
+```{r}
+sum(is.na(data$connaiss))
+
+```
+
+### nature auteur
+```{r}
+sum(is.na(data$nature_aut))
+```
+0N a 20 valeurs manquantes dans cette colonne cela peut etre dire au fait qu'ils ne connaissent pas l'auteur.0N encode donc par "aucune reponse"
+```{r}
+data <- data %>% mutate( nature_aut = ifelse(is.na( nature_aut), "aucune reponse",  nature_aut))
+
+```
+
+```{r}
+unique(data$nature_aut)
+```
+### Period_hist
+```{r}
+sum(is.na(data$Period_hist))/(dim(data)[1])*100
+```
+0N a 13.98305%valeurs manquantes dans cette colonne cela peut etre dire au fait qu'ils ne connaissent pas l'auteur.0N encode donc par "aucune reponse"
+```{r}
+data <- data %>% mutate( Period_hist = ifelse(is.na( Period_hist), "aucune reponse",  Period_hist))
+```
+
+
+```{r}
+unique(data$Period_hist)
+```
+
+### oeuvres_lu
+```{r}
+sum(is.na(data$oeuvres_lu))
+
+```
+0N a 153 valeurs manquantes dans cette colonne cela peut etre dire au fait qu'ils ne connaissent pas l'auteur.0N encode donc par "aucune reponse"
+```{r}
+data <- data %>% mutate( oeuvres_lu = ifelse(is.na( oeuvres_lu), "aucune reponse",  oeuvres_lu))
+```
+
+```{r}
+unique(data$oeuvres_lu)
+```
+```{r}
+j=unique(data$oeuvres_lu)
+```
+Pas de Problemes sur cette colone car c'etait a cocher.
+
+
+```{r}
+sum(is.na(data$description_app))
+```
+```{r}
+unique(data$description_app)
+```
+```{r}
+data <- data %>% mutate( description_app = ifelse(is.na( description_app), "aucune reponse",  description_app))
+```
+
+0N va recoder tous les na en Non et d'autres mal saisis
+```{r}
+mal_saisi=c("Aucune idée" ,"Je sais pas" ,"Ras","Je n'ai lu aucune de ses oeuvres. Donc c'est sans objet pour moi.")
+for(i in li){
+  for(j in mal_saisi){
+      if( data[i,"description_app"] == j ){
+        
+        data[i,"description_app"]="Non"
+    
+      }
+    }
+    
+}
+
+```
+
+```{r}
+unique(data$description_app)
+```
+```{r}
+head(data)
+```
+### enseignants_aut
+```{r}
+sum(is.na(data$enseignants_aut))
+```
+```{r}
+data <- data %>% mutate( enseignants_aut = ifelse(is.na( enseignants_aut), "aucune reponse",  enseignants_aut))
+```
+
+```{r}
+unique(data$enseignants_aut)
+```
+```{r}
+u=c("Aucune idée","." ,"non" ,"No","0","Je ne sais pas","Je sais pas","Chercheur, visionnaire","Son fils","je ne connais pas mais il a eu faire ses études à paris","il faut vous former jusqu’aux dents","non je sais pas")
+  
+for(i in li){
+  for(j in u){
+      if( data[i,"enseignants_aut"] == j ){
+        
+        data[i,"enseignants_aut"]="Non"
+    
+      }
+    }
+    
+}  
+
+```
+
+### Transf0rm0ns la c0l avec des caracteres miniscules
+```{r}
+for (i in li){
+  data[i,"enseignants_aut"]=tolower(data[i,"enseignants_aut"])
+  
+}
+```
+
+
+```{r}
+unique(data$enseignants_aut)
+```
+
+### perception
+
+```{r}
+
+# encodons les modalites de perception p0ur eviter le surchage de graphe
+
+# transformer toutes les lignes qui ont  valeur Visionnaire et Pionnier Promoteur du panafricanisme en Visionnaire et Pionnier
+
+# Créer un exemple de vecteur avec les modalités
+modalites <- c(
+  "Visionnaire et Pionnier Promoteur du panafricanisme",
+  "Visionnaire et Pionnier Promoteur de la Diversité Historique",
+  "Visionnaire et Pionnier",
+  "Visionnaire et Pionnier Isolationniste Académique Critique et Contestataire Promoteur du panafricanisme",
+  "Promoteur du panafricanisme",
+  "Critique et Contestataire Promoteur du panafricanisme",
+  "Promoteur de la Diversité Historique",
+  "Promoteur de la Diversité Historique Critique et Contestataire Promoteur du panafricanisme",
+  "Visionnaire et Pionnier Critique et Contestataire Promoteur du panafricanisme",
+  "Visionnaire et Pionnier Promoteur de la Diversité Historique Promoteur du panafricanisme",
+  "Isolationniste Académique",
+  "Visionnaire et Pionnier Promoteur de la Diversité Historique Critique et Contestataire Promoteur du panafricanisme",
+  "Critique et Contestataire",
+  "Visionnaire et Pionnier Critique et Contestataire",
+  "Promoteur de la Diversité Historique Promoteur du panafricanisme",
+  "Visionnaire et Pionnier Promoteur de la Diversité Historique Critique et Contestataire",
+  "Visionnaire et Pionnier Isolationniste Académique Promoteur du panafricanisme",
+  "Visionnaire et Pionnier Promoteur de la Diversité Historique Isolationniste Académique Critique et Contestataire Promoteur du panafricanisme",
+  "Visionnaire et Pionnier Isolationniste Académique"
+)
+
+
+
+# Transformer les lignes avec la valeur spécifique
+data <- data %>%
+  mutate(perception_gen = if_else(perception_gen == "Visionnaire et Pionnier Promoteur du panafricanisme", "Visionnaire et Pionnier", perception_gen))
+
+# Afficher le data frame après transformation
+head(data)
+
+```
+### Visionnaire et Pionnier Promoteur de la Diversité Historique,Visionnaire et Pionnier Isolationniste Académique, en Visionnaire et Pionnier
+```{r}
+data <- data %>%
+  mutate(perception_gen = if_else(perception_gen == "Visionnaire et Pionnier Promoteur de la Diversité Historique", "Visionnaire et Pionnier", perception_gen))
+```
+
+```{r}
+data <- data %>%
+  mutate(perception_gen= if_else(perception_gen == "Visionnaire et Pionnier Isolationniste Académique", "Visionnaire et Pionnier", perception_gen))
+head(data)
+```
+###   "Visionnaire et Pionnier Isolationniste Académique Critique et Contestataire Promoteur du panafricanisme", Visionnaire et Pionnier Critique et Contestataire ,Visionnaire et Pionnier Promoteur de la Diversité Historique Isolationniste Académique Critique et Contestataire Promoteur du panafricanisme ,Visionnaire et Pionnier Promoteur de la Diversité Historique Critique et Contestataire,Visionnaire et Pionnier Critique et Contestataire Promoteur du panafricanisme,en Visionnaire et Pionnier et Contestataire
+```{r}
+data <- data %>%
+  mutate(
+     perception_gen= case_when(
+      perception_gen %in% c(
+        "Visionnaire et Pionnier Isolationniste Académique Critique et Contestataire Promoteur du panafricanisme",
+        "Visionnaire et Pionnier Critique et Contestataire",
+        "Visionnaire et Pionnier Promoteur de la Diversité Historique Isolationniste Académique Critique et Contestataire Promoteur du panafricanisme",
+        "Visionnaire et Pionnier Promoteur de la Diversité Historique Critique et Contestataire",
+        "Visionnaire et Pionnier Critique et Contestataire Promoteur du panafricanisme",
+        "Visionnaire et Pionnier Promoteur de la Diversité Historique Critique et Contestataire Promoteur du panafricanisme"
+      ) ~ "Visionnaire et Pionnier et Contestataire",
+      TRUE ~ perception_gen
+    )
+  )
+```
+
+```{r}
+unique(data$perception_gen)
+```
+
+
+```{r}
+
+data <- data %>%
+  mutate(
+     perception_gen= case_when(
+      perception_gen %in% c(
+"Promoteur du panafricanisme",
+        "Promoteur de la Diversité Historique",
+        "Promoteur de la Diversité Historique Promoteur du panafricanisme"
+
+      ) ~ "Promoteur",
+      TRUE ~ perception_gen
+    )
+  )
+```
+
+```{r}
+data <- data %>%
+  mutate(
+     perception_gen= case_when(
+      perception_gen %in% c(
+"Critique et Contestataire Promoteur du panafricanisme"
+ ) ~ "Critique et Contestataire",
+      TRUE ~ perception_gen
+    )
+  )
+```
+
+
+```{r}
+data <- data %>%
+  mutate(
+     perception_gen= case_when(
+      perception_gen %in% c(
+"Visionnaire et Pionnier Isolationniste Académique Promoteur du panafricanisme",
+"Visionnaire et Pionnier Promoteur de la Diversité Historique Promoteur du panafricanisme"
+
+ ) ~ "Visionnaire et Pionnier",
+      TRUE ~ perception_gen
+    )
+  )
+```
+
+
+```{r}
+data <- data %>%
+  mutate(
+     perception_gen= case_when(
+      perception_gen %in% c(
+"Promoteur de la Diversité Historique Critique et Contestataire Promoteur du panafricanisme"
+ ) ~ "Promoteur et Contestataire",
+      TRUE ~ perception_gen
+    )
+  )
+```
+
+```{r}
+unique(data$perception_gen)
+```
+```{r}
+data <- data %>% mutate( perception_gen = ifelse(is.na( perception_gen), "aucune reponse",  perception_gen))
+```
+
+```{r}
+unique(data$perception_gen)
+```
+
+### influence
+```{r}
+data <- data %>% mutate( influence = ifelse(is.na( influence), "aucune reponse",  influence))
+```
+
+
+```{r}
+ggplot(data,aes(x=age,y=perception))+geom_point()
+```
+
+
+```{r}
+data <- data %>% mutate( autres_auteur= ifelse(is.na( autres_auteur), "aucune reponse",  autres_auteur))
+```
+
+
+```{r}
+unique(data$autres_auteur)
+```
+```{r}
+u_trait=c("Partout" ,"non","Non, je suppose juste" ,"Le nom ne me reviens pas mais j'ai suivi des interventions qui de personnes qui disent que Cheikh Anta Diop a eu une très grange influence sur ses comptemporains")
+for(i in li){
+  for(j in u_trait){
+      if( data[i,"autres_auteur"] == j ){
+        
+        data[i,"autres_auteur"]="Non"
+    
+      }
+    }
+    
+}  
+
+```
+
+
+```{r}
+for (i in li){
+  data[i,"enseignants_aut"]=tolower(data[i,"enseignants_aut"])
+  
+}
+```
+
+
+```{r}
+unique(data$enseignants_aut)
+```
+
+### pertinence_idees
+```{r}
+
+
+data <- data %>% mutate( pertinence_idees= ifelse(is.na(pertinence_idees), "aucune reponse",  pertinence_idees))
+```
+
+### critiques_analyses
+```{r}
+data <- data %>% mutate(critiques_analyses= ifelse(is.na(critiques_analyses), "aucune reponse",  critiques_analyses))
+```
+
+### ,principales_critiques
+
+```{r}
+data <- data %>% mutate(principales_critiques= ifelse(is.na(principales_critiques), "aucune reponse",  principales_critiques))
+```
+
+```{r}
+u_cat=c("Aucunes")
+
+
+for(i in li){
+  for(j in u_cat){
+      if( data[i,"principales_critiques"] == j ){
+        
+        data[i,"principales_critiques"]="aucune reponse"
+    
+      }
+    }
+    
+}  
+```
+
+```{r}
+unique(data$principales_critiques)
+```
+
+
+
+```{r}
+# Installer et charger le package ggplot2
+#nstall.packages("ggplot2")
+#ibrary(ggplot2)
+
+# Créer un exemple de dataframe (remplacez cela par vos propres données)
+donnees <- data
+
+# Calculer le pourcentage de chaque réponse
+pourcentages <- prop.table(table(donnees$connaiss)) * 100
+
+# Créer un graphique à barres avec ggplot2
+ggplot(donnees, aes(x = connaiss)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  geom_text(stat = "count", aes(label = paste(round(..count../sum(..count..) * 100, 1), "%")), vjust = -0.5) +
+  labs(title = "Connaissance de Cheikh Anta Diop",
+       x = "Avez-vous déjà entendu parler de Cheikh Anta Diop?",
+       y = "Pourcentage") +
+  theme_minimal()
+
+```
+```{r}
+data <- data %>% mutate(Pays_naiss_user= ifelse(is.na(Pays_naiss_user), "aucune reponse",  Pays_naiss_user))
+
+```
+
+```{r}
+ggplot(data, aes(x = connaiss, fill = Pays_naiss_user)) +
+  geom_bar(position = "dodge", color = "black", stat = "count") +
+  labs(title = "Bar Plot of Pays_naiss_user vs. connaiss",
+       x = "Pays_naiss_user",
+       y = "Count") +
+  theme_minimal()
+
+```
+
+
+```{r}
+data <- data %>% mutate(education_user= ifelse(is.na(education_user), "aucune reponse",  education_user))
+```
+
+```{r}
+# Installer et charger le package ggplot2
+
+
+# Créer un exemple de dataframe (remplacez cela par vos propres données)
+
+
+# Créer un graphique à barres avec ggplot2
+ggplot(data, aes(x = education_user, fill = education_user)) +
+  geom_bar(color = "black", size = 0.5, position = "dodge") +
+  labs(title = "Distribution des Niveaux d'Éducation",
+       x = "Niveau d'Éducation",
+       y = "Nombre de Participants") +
+  theme_minimal() +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.text = element_text(size = 12, color = "black"),
+    axis.title = element_text(size = 14, color = "black"),
+    plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+    legend.position = "none"  # Supprimer la légende
+  )
+
+
+```
+
+
+
+```{r}
+head(data)
+```
+
+
+```{r}
+# traitement avant viz
+
+
+for(i in li){
+  if( data[i,"oeuvres_aut"] == "nation negre et culture,les fndements culturels et techniques d'un  federal Afrique noir" ){
+        
+        data[i,"oeuvres_aut"]="nations nègres et culture,les fondements culturels et techniques d'un  federal Afrique noir"
+    
+      }
+
+} 
+
+for(i in li){
+  if( data[i,"oeuvres_aut"] == "nations nègres et culture , civilisations ou barbarie" ){
+        
+        data[i,"oeuvres_aut"]="nations nègres et culture,barbabrie ou civilisation"
+    
+      }
+
+} 
+
+for(i in li){
+  if( data[i,"oeuvres_aut"] == "nations negres et culture, civilisation ou barbarie,l’afrique noire pré coloniale" ){
+        
+        data[i,"oeuvres_aut"]="nations nègres et culture,barbabrie ou civilisation,afrique noire  precoloniale"
+    
+      }
+
+} 
+
+
+``` 
+
+
+
+
+
+```{r}
+library(tidyr)
+
+# Créer un exemple de dataframe (remplacez cela par vos propres données)
+df <- data.frame(chiffre = c("un", "deux", "un,deux", "deux", "un"))
+
+# Diviser la colonne "chiffre" en plusieurs colonnes
+df_sep <- separate_rows(df, chiffre, sep = ",")
+
+# Dupliquer les lignes en fonction du nombre d'occurrences
+df_sep
+
+```
+```{r}
+data_oeuvres_aut=data[,"oeuvres_aut"]
+data_oeuvres_aut
+
+df_sep <- separate_rows(data_oeuvres_aut, oeuvres_aut, sep = ",")
+
+# Dupliquer les lignes en fonction du nombre d'occurrences
+df_sep
+```
+### gesti0n de la c0l oeuvres_aut
+
+```{r}
+unique(df_sep$oeuvres_aut)
+```
+
+
+
+
+```{r}
+ggplot(df_sep,aes(y=oeuvres_aut))+geom_bar()
+```
+
+
+```{r}
+#ibrary(ggplot2)
+
+# Votre code initial
+ggplot(df_sep, aes(y = oeuvres_aut)) +
+  geom_bar(fill = "lightgreen", color = "black", stat = "count", show.legend = FALSE) +   theme_minimal() +
+  
+  # Ajouter des couleurs au texte des axes
+  theme(axis.text = element_text(color = "black"))
+
+
+```
+
+```{r}
+unique(data$celebres_soutien_aut)
+```
+
+
+```{r}
+for (i in li){
+  data[i,"celebres_soutien_aut"]=tolower(data[i,"celebres_soutien_aut"])
+  
+}
+```
+
+
+```{r}
+unique(data$celebres_soutien_aut)
+```
+
+
+```{r}
+data <- data %>% mutate(celebres_soutien_aut= ifelse(is.na(celebres_soutien_aut), "aucune reponse",  celebres_soutien_aut)) 
+
+```
+
+
+```{r}
+# Charger les données
+# Supposons que votre variable soit dans un objet appelé 'donnees' et a pour nom 'variable'
+
+# Installation du package 'stringdist' si non installé
+# install.packages("stringdist")
+library(stringdist)
+
+# Liste des modalités correctes
+modalites_correctes <- c("aucune reponse", "non", "théophile obenga, ivan certima", "aucune idée",  "joseph ki zerbo", "aimé césaire", "un allemand", "sekou touré", "sartre", "obenga", "omotunde", "jon", "bernard dadie", "je ne sais pas",  "boris diop", "ras", "leopold sedar senghor", "griaule, bachelard", "je sais pas", "dr dialo diop, maiettou diongue, alioune diop présence africaine", "t. obenga, moléfi kété asanté",  "ousmane camara")
+
+# Fonction pour trouver la modalité la plus proche dans la liste correcte
+trouver_modalite_correcte <- function(modalite) {
+  distances <- stringdist::stringdistmatrix(modalite, modalites_correctes)
+  indice_modalite_correcte <- which.min(distances)
+  return(modalites_correctes[indice_modalite_correcte])
+}
+
+# Appliquer la fonction à la variable
+data$celebres_soutien_aut <- sapply(data$celebres_soutien_aut, trouver_modalite_correcte)
+
+```
+
+
+```{r}
+unique(data$celebres_soutien_aut)
+```
+|  
+```{r}
+for(i in li){
+  if((data[i,"celebres_soutien_aut"] == "je sais pas")|(data[i,"celebres_soutien_aut"] =="ras") | (data[i,"celebres_soutien_aut"]== "je ne sais pas") |(data[i,"celebres_soutien_aut"]== "aucune idée")    |  (data[i,"celebres_soutien_aut"]== "un allemand" )){
+                                                        
+                                                        
+        
+        data[i,"celebres_soutien_aut"]="non"
+      }
+
+}
+```
+
+
+
+
+```{r}
+data_celebres_soutien_aut=data[,"celebres_soutien_aut"]
+data_celebres_soutien_aut
+
+df_sep1<- separate_rows(data_celebres_soutien_aut, celebres_soutien_aut, sep = ",")
+
+# Dupliquer les lignes en fonction du nombre d'occurrences
+df_sep1
+```
+
+
+```{r}
+li1=1:dim(df_sep1)[1]
+for(i in li1){
+  if((df_sep1[i,"celebres_soutien_aut"] == "t. obenga")){
+                                                        
+                                                        
+        
+        df_sep1[i,"celebres_soutien_aut"]="théophile obenga"
+      }
+
+} 
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(df_sep1, aes(y = celebres_soutien_aut)) +
+  geom_bar(fill = "lightgreen", color = "black", stat = "count", show.legend = FALSE) +   theme_minimal() +
+  
+  # Ajouter des couleurs au texte des axes
+  theme(axis.text = element_text(color = "black"))
+```
+
+
+
+```{r}
+unique(df_sep1$celebres_soutien_aut)
+```
+
+```{r}
+unique(data$oeuvres_lu)
+```
+
+
+
